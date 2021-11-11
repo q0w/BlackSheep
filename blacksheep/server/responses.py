@@ -7,6 +7,7 @@ from typing import Any, AnyStr, AsyncIterable, Callable, Union
 from blacksheep import Content, JSONContent, Response, StreamedContent, TextContent
 from blacksheep.common.files.asyncfs import FilesHandler
 from blacksheep.plugins import json as json_plugin
+from blacksheep.plugins import msgpack as msgpack_plugin
 
 MessageType = Any
 
@@ -208,6 +209,21 @@ def pretty_json(
         Content(
             b"application/json",
             json_plugin.pretty_dumps(data).encode("utf8"),
+        ),
+    )
+
+
+def msgpack(data: Any, status: int = 200) -> Response:
+    """
+    Returns a response with application/msgpack content,
+    and given status (default HTTP 200 OK).
+    """
+    return Response(
+        status,
+        None,
+        Content(
+            b"application/msgpack",
+            msgpack_plugin.dumps(data),
         ),
     )
 

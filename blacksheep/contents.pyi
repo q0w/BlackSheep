@@ -60,6 +60,18 @@ class JSONContent(Content):
         """
         super().__init__(b"application/json", dumps(data).encode("utf8"))
 
+def default_msgpack_dumps(value: Any) -> bytes: ...
+
+class MsgpackContent(Content):
+    def __init__(
+        self, data: object, dumps: Callable[[Any], bytes] = default_msgpack_dumps
+    ):
+        """
+        Creates an instance of MsgpackContent class, automatically serializing the given
+        input in Msgpack format.
+        """
+        super().__init__(b"application/msgpack", dumps(data))
+
 class FormContent(Content):
     def __init__(self, data: Union[Dict[str, str], List[Tuple[str, str]]]):
         """

@@ -8,6 +8,7 @@ from .contents import (
     HtmlContent,
     JSONContent,
     JsonContent,
+    MsgpackContent,
     MultiPartFormData,
     StreamedContent,
     TextContent,

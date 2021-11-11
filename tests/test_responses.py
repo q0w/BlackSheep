@@ -23,6 +23,7 @@ from blacksheep.server.responses import (
     html,
     json,
     moved_permanently,
+    msgpack,
     no_content,
     not_found,
     not_modified,
@@ -118,6 +119,14 @@ JSON_OBJECTS = [
             "created_at": "2015-10-21T07:28:00",
         },
     ),
+]
+
+
+MSGPACK_OBJECTS = [
+    (
+        b"Hello World",
+        b"\xc4\x0bHello World",
+    )
 ]
 
 
@@ -631,6 +640,33 @@ async def test_pretty_json_response(
             assert f'    "{name}": "{value}"' in raw
         else:
             assert f'    "{name}": ' in raw
+
+
+@pytest.mark.parametrize("obj,values", MSGPACK_OBJECTS)
+@pytest.mark.asyncio
+async def test_msgpack_response(
+    obj: Any, values: bytes, app, mock_receive, mock_send
+):
+    @app.router.get("/")
+    async def home():
+        return msgpack(obj)
+
+    app.normalize_handlers()
+
+    await app(
+        get_example_scope("GET", "/", []),
+        mock_receive(),
+        mock_send,
+    )
+
+    response = app.response
+    assert response.status == 200
+
+    content_type = response.headers.get_single(b"content-type")
+    assert content_type == b"application/msgpack"
+
+    data = await response.msgpack()
+    assert data == obj
 
 
 @pytest.mark.asyncio

@@ -38,6 +38,7 @@ cdef class Message:
     cpdef bint has_body(self)
     cpdef bint declares_content_type(self, bytes type)
     cpdef bint declares_json(self)
+    cpdef bint declares_msgpack(self)
     cpdef bint declares_xml(self)
 
 

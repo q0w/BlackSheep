@@ -1,8 +1,9 @@
 from typing import List
 
+import msgpack
 import pytest
 
-from blacksheep import JSONContent, Request, StreamedContent
+from blacksheep import JSONContent, MsgpackContent, Request, StreamedContent
 from blacksheep.contents import (
     FormPart,
     HTMLContent,
@@ -288,6 +289,19 @@ def test_text_content_data(text):
     assert content.body == text.encode("utf8")
 
 
+def test_msgpack_content_type():
+    content = MsgpackContent(b'Hello World')
+    assert content.type == b"application/msgpack"
+
+
+@pytest.mark.parametrize(
+    "data", [b"Hello world", b"Another world"]
+)
+def test_msgpack_content_data(data):
+    content = MsgpackContent(data)
+    assert content.body == msgpack.dumps(data)
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "req,expected_chunks",
@@ -314,6 +328,17 @@ def test_text_content_data(text):
             ).with_content(TextContent("Hello World")),
             [b"Hello World"],
         ),
+        (
+            Request(
+                "POST",
+                b'/',
+                headers=[
+                    (b"content-type", b"application/msgpack"),
+                    (b"expect", b"100-continue"),
+                ],
+            ).with_content(MsgpackContent(b'Hello world')),
+            [b"\xc4\x0bHello world"]
+        )
     ],
 )
 async def test_write_request_body_only(req: Request, expected_chunks: List[bytes]):

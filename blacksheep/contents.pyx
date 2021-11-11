@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import parse_qsl, quote_plus
 
 from blacksheep.plugins import json as json_plugin
+from blacksheep.plugins import msgpack as msgpack_plugin
 
 from .exceptions cimport MessageAborted
 
@@ -113,6 +114,12 @@ cdef class JSONContent(Content):
 
     def __init__(self, object data, dumps=json_plugin.dumps):
         super().__init__(b'application/json', dumps(data).encode('utf8'))
+
+
+cdef class MsgpackContent(Content):
+
+    def __init__(self, object data, dumps=msgpack_plugin.dumps):
+        super().__init__(b'application/msgpack', dumps(data))
 
 
 cdef dict parse_www_form_urlencoded(str content):

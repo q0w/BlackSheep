@@ -8,6 +8,7 @@ import cchardet as chardet
 
 from blacksheep.multipart import parse_multipart
 from blacksheep.plugins import json as json_plugin
+from blacksheep.plugins import msgpack as msgpack_plugin
 from blacksheep.sessions import Session
 
 from .contents cimport Content, multiparts_to_dictionary, parse_www_form_urlencoded
@@ -198,6 +199,9 @@ cdef class Message:
     cpdef bint declares_json(self):
         return self.declares_content_type(b'json')
 
+    cpdef bint declares_msgpack(self):
+        return self.declares_content_type(b'msgpack')
+
     cpdef bint declares_xml(self):
         return self.declares_content_type(b'xml')
 
@@ -238,6 +242,30 @@ cdef class Message:
                 f'Cannot parse content as JSON',
                 decode_error
             )
+
+    async def msgpack(self, loads=msgpack_plugin.loads):
+        if not self.declares_msgpack():
+            return None
+
+        content = await self.read()
+
+        if content is None or content == b"":
+            return None
+
+        try:
+            return loads(content)
+        except Exception as decode_error:
+            content_type = self.content_type()
+            if content_type and b'msgpack' in content_type:
+                raise BadRequestFormat(
+                    f'Declared Content-Type is {content_type.decode()} but '
+                    f'the content cannot be parsed as Msgpack.', decode_error
+                )
+            raise BadRequestFormat(
+                f'Cannot parse content as Msgpack',
+                decode_error
+            )
+
 
     cpdef bint has_body(self):
         cdef Content content = self.content

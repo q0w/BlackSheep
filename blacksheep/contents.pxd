@@ -32,6 +32,10 @@ cdef class JSONContent(Content):
     pass
 
 
+cdef class MsgpackContent(Content):
+    pass
+
+
 cdef class FormContent(Content):
     pass
 
